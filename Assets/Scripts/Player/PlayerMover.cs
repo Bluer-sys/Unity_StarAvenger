@@ -1,3 +1,4 @@
+using DefaultNamespace;
 using UnityEngine;
 
 [RequireComponent(typeof(Player)), RequireComponent(typeof(Rigidbody2D))]
@@ -6,18 +7,22 @@ public class PlayerMover : MonoBehaviour
     [SerializeField] private float _speed;
     [SerializeField] private float _maxSpeed;
     [SerializeField] private float _stopSpeed;
-    [SerializeField] private Camera _mainCamera;
 
-    private Player _player;
-    private Rigidbody2D _rigidbody2D;
-    private PlayerInput _input;
+    private Player          _player;
+    private Rigidbody2D     _rigidbody2D;
+    private PlayerInput     _input;
 
-    private Vector2 minBorder;
-    private Vector2 maxBorder;
+    private Vector2 _minBorder;
+    private Vector2 _maxBorder;
+    
+    Camera _camera;
 
     private void Awake()
     {
-        _input = new PlayerInput();
+        _camera         = Camera.main;
+        _input          = new PlayerInput();
+        _player         = GetComponent<Player>();
+        _rigidbody2D    = GetComponent<Rigidbody2D>();
     }
 
     private void OnEnable()
@@ -26,8 +31,10 @@ public class PlayerMover : MonoBehaviour
 
         Cursor.visible = false;
 
-        maxBorder = Camera.main.ViewportToWorldPoint(new Vector2(1, 1)); // ѕри изменении разрешени€ перезапускать.
-        minBorder = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
+        _maxBorder  = _camera.ViewportToWorldPoint(new Vector2(1, 1)); // ѕри изменении разрешени€ перезапускать.
+        _minBorder  = _camera.ViewportToWorldPoint(new Vector2(0, 0));
+
+        //Debug.Log( "Border: " + _minBorder + " : " + _maxBorder );
     }
 
     private void OnDisable()
@@ -37,34 +44,32 @@ public class PlayerMover : MonoBehaviour
         Cursor.visible = true;
     }
 
-    private void Start()
+    private void Update()
     {
-        _player = GetComponent<Player>();
-        _rigidbody2D = GetComponent<Rigidbody2D>();
+        Vector2 mousePos        = _input.Movement.MouseMove.ReadValue<Vector2>();
+        Vector2 worldPos        = _camera.ScreenToWorldPoint(mousePos);
+
+        MoveMouse(worldPos);
     }
 
-    private void FixedUpdate()
+    private void MoveMouse(Vector2 to)
     {
+        Vector2 currentPos      = _player.transform.position;
+        Vector2 direction       = (to - currentPos).normalized;
+        float magnitude         = (to - currentPos).magnitude;
 
-        Vector2 mousePos = _input.Movement.MouseMove.ReadValue<Vector2>();
-        Vector2 moveToMouse = Camera.main.ScreenToWorldPoint(mousePos);
-
-        MoveMouse(moveToMouse);
-    }
-
-    private void MoveMouse(Vector2 movement)
-    {
-        var currentPosition = _player.transform.position;
-
-        if (currentPosition.x >= maxBorder.x || currentPosition.y >= maxBorder.y || currentPosition.x <= minBorder.x || currentPosition.y <= minBorder.y)
+        if(magnitude <= Constant.Epsilon)
+        {
+            _rigidbody2D.velocity = Vector2.zero;
             return;
-        else
-            _player.transform.position = Vector2.MoveTowards(_player.transform.position, movement, _speed * Time.fixedDeltaTime);     
+        }
+
+        _rigidbody2D.velocity   = direction * _speed * magnitude * Time.timeScale;
     }
 
-    private void MoveKeyboard(Vector2 movement)
+    private void MoveKeyboard(Vector2 to)
     {
-        _rigidbody2D.AddForce(movement * _speed);
+        _rigidbody2D.AddForce(to * _speed);
 
         Vector2 currentVelocity = _rigidbody2D.velocity;
 
@@ -75,7 +80,7 @@ public class PlayerMover : MonoBehaviour
                     (currentVelocity.y / currentVelocity.magnitude) * _maxSpeed);
         }
 
-        if (movement.magnitude < 0.01f && currentVelocity.magnitude > 0.001f)
+        if (to.magnitude < 0.01f && currentVelocity.magnitude > 0.001f)
         {
             _rigidbody2D.velocity = new Vector2(currentVelocity.x / _stopSpeed, currentVelocity.y / _stopSpeed);
         }
