@@ -26,12 +26,9 @@ public class DropItem : BonusItem
 
     public bool DropWithChance(float factor)
     {
-        float randomValue = Random.Range(0, 1.0f) / factor;
+        float randomValue = Random.value / factor;
 
-        if (randomValue > _dropChance)
-            return false;
-
-        return true;
+        return randomValue <= _dropChance;
     }
 
     private IEnumerator AutoDisable()
