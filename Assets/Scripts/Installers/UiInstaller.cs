@@ -6,6 +6,11 @@ namespace DefaultNamespace.Installers
     {
         public override void InstallBindings()
         {
+            // BuffsViewer
+            Container
+                .BindInterfacesTo<BuffsViewer>()
+                .FromComponentInHierarchy()
+                .AsSingle();
         }
     }
 }

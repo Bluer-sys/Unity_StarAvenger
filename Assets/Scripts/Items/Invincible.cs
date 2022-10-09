@@ -10,10 +10,10 @@ public class Invincible : DropItem
     {
         if(collision.TryGetComponent(out Player player))
         {
-            PlayerBuffsApplyer playerBuffsApplyer = player.GetComponent<PlayerBuffsApplyer>();
+            PlayerBuffsApplier playerBuffsApplier = player.GetComponent<PlayerBuffsApplier>();
             Sprite sprite = GetComponent<SpriteRenderer>().sprite;
 
-            playerBuffsApplyer.ApplyInvincibleBuff(_duration, sprite);
+            playerBuffsApplier.ApplyInvincibleBuff(_duration, sprite);
 
             gameObject.SetActive(false);
             Instantiate(_takeEffect, transform.position, Quaternion.identity);

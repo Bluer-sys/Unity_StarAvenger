@@ -1,15 +1,18 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class BuffsViewer : MonoBehaviour
+public interface IBuffsViewer
+{
+    void View(Sprite image, float duration);
+    bool TryResetView(Sprite image);
+}
+
+public class BuffsViewer : MonoBehaviour, IBuffsViewer
 {
     [SerializeField] Transform _content;
     
-    private List<BuffRender> _imagesPool = new List<BuffRender>();
+    private readonly List<BuffRender> _imagesPool = new List<BuffRender>();
 
     private void Start()
     {

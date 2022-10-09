@@ -1,23 +1,30 @@
 using System.Collections;
-using System.Collections.Generic;
+using DefaultNamespace.UI;
 using UnityEngine;
-using UnityEngine.UI;
+using Zenject;
 
-[RequireComponent(typeof(Player), typeof(PlayerWeapon))]
-public class PlayerBuffsApplyer : MonoBehaviour
+public interface IPlayerBuffsApplyer
 {
-    [SerializeField] private BuffsViewer _buffsViewer;
+    void ApplyFastShootingBuff(float duration, float newShootInterval, Sprite image);
+    void ApplyInvincibleBuff(float duration, Sprite image);
+}
+
+public class PlayerBuffsApplier : MonoBehaviour, IPlayerBuffsApplyer
+{
+    [Inject] private IUiView _uiView;
 
     private Player _player;
     private PlayerWeapon[] _playerWeapons;
 
+    
     private void Start()
     {
         _player = GetComponent<Player>();
         _playerWeapons = GetComponent<PlayerShooting>().Weapons;
     }
 
-    #region Fast Shooting Buff
+#region Fast Shooting Buff
+    
     private Coroutine fastShootingCoroutine;
     private bool isFastShootingCoroutineStart = false;
 
@@ -28,10 +35,10 @@ public class PlayerBuffsApplyer : MonoBehaviour
             StopCoroutine(fastShootingCoroutine);
             isFastShootingCoroutineStart = false;
             
-            if (!_buffsViewer.TryResetView(image))
-                _buffsViewer.View(image, duration);
+            if (!_uiView.TryResetBuff(image))
+                _uiView.ViewBuff(image, duration);
         }
-        else _buffsViewer.View(image, duration);
+        else _uiView.ViewBuff(image, duration);
 
         fastShootingCoroutine = StartCoroutine(FastShootingCoroutine(duration, newShootInterval));
     }
@@ -52,9 +59,11 @@ public class PlayerBuffsApplyer : MonoBehaviour
         }
         isFastShootingCoroutineStart = false;
     }
-    #endregion
+    
+#endregion
 
-    #region Invincible Buff
+#region Invincible Buff
+    
     private Coroutine invincibleCoroutine;
     private bool isinvincibleCoroutineStart = false;
 
@@ -65,10 +74,10 @@ public class PlayerBuffsApplyer : MonoBehaviour
             StopCoroutine(invincibleCoroutine);
             isinvincibleCoroutineStart = false;
 
-            if (!_buffsViewer.TryResetView(image))
-                _buffsViewer.View(image, duration);
+            if (!_uiView.TryResetBuff(image))
+                _uiView.ViewBuff(image, duration);
         }
-        else _buffsViewer.View(image, duration);
+        else _uiView.ViewBuff(image, duration);
 
         invincibleCoroutine = StartCoroutine(InvincibleCoroutine(duration));
     }
@@ -83,5 +92,6 @@ public class PlayerBuffsApplyer : MonoBehaviour
         _player.SwitchInvincible(false);
         isinvincibleCoroutineStart = false;
     }
-    #endregion
+    
+#endregion
 }

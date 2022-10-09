@@ -12,10 +12,10 @@ public class FastShooting : DropItem
     {
         if (collision.TryGetComponent(out Player player))
         {
-            PlayerBuffsApplyer playerBuffsApplyer = player.GetComponent<PlayerBuffsApplyer>();
+            PlayerBuffsApplier playerBuffsApplier = player.GetComponent<PlayerBuffsApplier>();
             Sprite sprite = GetComponent<SpriteRenderer>().sprite;
 
-            playerBuffsApplyer.ApplyFastShootingBuff(_duration, _newShootInterval, sprite);
+            playerBuffsApplier.ApplyFastShootingBuff(_duration, _newShootInterval, sprite);
 
             gameObject.SetActive(false);
             Instantiate(_takeEffect, transform.position, Quaternion.identity);
