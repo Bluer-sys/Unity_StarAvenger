@@ -1,6 +1,7 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+using DefaultNamespace.UI;
+using UniRx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,44 +11,36 @@ public class GameSceneController : MonoBehaviour
 {
     public static PlayerData PlayerData;
 
-    [SerializeField] private Player _player;
-    [SerializeField] private TMP_Text _gameOverText;
-    [SerializeField] private TMP_Text _completeLevelText;
-    [SerializeField] private Animator _completeLevelAnimator;
-    [SerializeField] private Button[] _gameButtons;
-    [SerializeField] private GameObject _menuPanel;
-    [SerializeField] private AudioSource _buttonClickSound;
+    [SerializeField] private Player         _player;
     
-    [Inject] private IEnemySpawner _enemySpawner;
+    [Inject] private IUiView        _uiView;
+    [Inject] private IEnemySpawner  _enemySpawner;
 
     private int currentLevelID;
 
     private void Awake()
     {
-        PlayerData = JsonUtility.FromJson<PlayerData>(PlayerPrefs.GetString("SaveGame"));
+        PlayerData      = JsonUtility.FromJson<PlayerData>(PlayerPrefs.GetString("SaveGame"));
 
-        _completeLevelText.alpha = 0;
-        currentLevelID = SceneManager.GetActiveScene().buildIndex;
+        _uiView.SetCompleteLevelTextAlpha( 0 );
+        currentLevelID  = SceneManager.GetActiveScene().buildIndex;
+        
+        SubscribeClick( _uiView.MainMenuButton, OnMainMenuButtonClick );
+        SubscribeClick( _uiView.RestartButton,  OnRestartLevelButtonClick );
+        SubscribeClick( _uiView.ExitButton,     OnExitButtonClick );
+        SubscribeClick( _uiView.ContinueButton, OnContinueButtonClick );
     }
 
     private void OnEnable()
     {
-        _player.PlayerDied += OnPlayerDie;
-        _enemySpawner.AllWavesSpawned += OnChangeLevel;
-        _gameButtons[0].onClick.AddListener(OnMainMenuButtonClick);
-        _gameButtons[1].onClick.AddListener(OnRestartLevelButtonClick);
-        _gameButtons[2].onClick.AddListener(OnExitButtonClick);
-        _gameButtons[3].onClick.AddListener(OnContinueButtonClick);
+        _player.PlayerDied                      += OnPlayerDie;
+        _enemySpawner.AllWavesSpawned           += OnChangeLevel;
     }
 
     private void OnDisable()
     {
-        _player.PlayerDied -= OnPlayerDie;
-        _enemySpawner.AllWavesSpawned -= OnChangeLevel;
-        _gameButtons[0].onClick.RemoveListener(OnMainMenuButtonClick);
-        _gameButtons[1].onClick.RemoveListener(OnRestartLevelButtonClick);
-        _gameButtons[2].onClick.RemoveListener(OnExitButtonClick);
-        _gameButtons[3].onClick.RemoveListener(OnContinueButtonClick);
+        _player.PlayerDied                      -= OnPlayerDie;
+        _enemySpawner.AllWavesSpawned           -= OnChangeLevel;
     }
 
     private void OnPlayerDie(int currentMoney)
@@ -71,7 +64,7 @@ public class GameSceneController : MonoBehaviour
     private IEnumerator SetGameOver()
     {
         yield return new WaitForSeconds(1.0f);
-        _gameOverText.gameObject.SetActive(true);
+        _uiView.SetGameOverTextActive( true );
 
         while(Time.timeScale > 0.1f)
         {
@@ -85,8 +78,8 @@ public class GameSceneController : MonoBehaviour
     private IEnumerator TryGoToShop()
     {
         yield return new WaitForSeconds(2.0f);
-        _completeLevelAnimator.SetBool("isLevelComplete", true);
-        _completeLevelText.alpha = 1;
+        _uiView.CompleteLevelAnimator.SetBool(IsLevelComplete, true);
+        _uiView.SetCompleteLevelTextAlpha( 1 );
         yield return new WaitForSeconds(5.0f);
 
         if (SceneManager.sceneCountInBuildSettings - 1 != SceneManager.GetActiveScene().buildIndex + 1)
@@ -99,27 +92,26 @@ public class GameSceneController : MonoBehaviour
         }
     }
 
+    void SubscribeClick(Button button, Action action)
+    {
+        button.OnClickAsObservable()
+            .Subscribe( _ => action() )
+            .AddTo( this );
+    }
+
     private void OnMainMenuButtonClick()
     {
-        _buttonClickSound.Play();
-
-        for (int i = 0; i < 2; i++)
-        {
-            _gameButtons[i].interactable = false;
-        }
-
+        _uiView.PlayButtonClickSound();
+        _uiView.SetAllButtonsInteractable( false );
+        
         Time.timeScale = 1;
         SceneManager.LoadScene(0);
     }
 
     private void OnRestartLevelButtonClick()
     {
-        _buttonClickSound.Play();
-
-        for (int i = 0; i < 2; i++)
-        {
-            _gameButtons[i].interactable = false;
-        }
+        _uiView.PlayButtonClickSound();
+        _uiView.SetAllButtonsInteractable( false );
 
         SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
         Time.timeScale = 1;
@@ -127,9 +119,9 @@ public class GameSceneController : MonoBehaviour
 
     private void OnExitButtonClick()
     {
-        _buttonClickSound.Play();
+        _uiView.PlayButtonClickSound();
 
-        _menuPanel.SetActive(false);
+        _uiView.SetMenuActive(false);
 
         SceneManager.LoadScene(0);
         Time.timeScale = 1;
@@ -137,10 +129,13 @@ public class GameSceneController : MonoBehaviour
 
     private void OnContinueButtonClick()
     {
-        _buttonClickSound.Play();
+        _uiView.PlayButtonClickSound();
 
-        _menuPanel.SetActive(false);
+        _uiView.SetMenuActive(false);
         Time.timeScale = 1;
         Cursor.visible = false;
     }
+    
+    // Constants
+    static readonly int IsLevelComplete     = Animator.StringToHash( "isLevelComplete" );
 }
