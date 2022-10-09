@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(EnemyBehavior))]
 public class SpawnSmallEnemiesState : State
@@ -12,11 +13,12 @@ public class SpawnSmallEnemiesState : State
     [SerializeField] private float _moveSpeed;
     [SerializeField] private State _nextState;
 
+    [Inject] IEnemySpawner _spawner;
+    
     private EnemyPool smallEnemyPool;
     private int enemyCount;
     private Transform[] movePoints;
     private Transform currentMovement;
-    private EnemySpawner spawner;
 
     private EnemyBehavior enemyBehavior;
     private Coroutine spawnCoroutine;
@@ -31,13 +33,12 @@ public class SpawnSmallEnemiesState : State
     {
         enemyBehavior = GetComponent<EnemyBehavior>();
         movePoints = FindObjectOfType<EnemyMovePoints>().GetComponentsInChildren<Transform>();
-        spawner = FindObjectOfType<EnemySpawner>();
         smallEnemyPool = GameObject.FindGameObjectWithTag("SmallEnemyPool").GetComponent<EnemyPool>();
     }
 
     private void OnDisable()
     {
-        spawnCoroutine = null;
+        StopCoroutine(spawnCoroutine);
     }
 
     public override void Enter()
@@ -48,19 +49,7 @@ public class SpawnSmallEnemiesState : State
 
         spawnCoroutine = StartCoroutine(SpawnSmallEnemy());
     }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-    }
-
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-
-    }
-
+    
     public override void PhysicUpdate()
     {
         base.PhysicUpdate();
@@ -87,8 +76,8 @@ public class SpawnSmallEnemiesState : State
                 enemy.gameObject.SetActive(true);
                 enemy.transform.position = _spawnPoints[rndPoint].position;
 
-                enemy.EnemyDied += spawner.OnUselessEnemyDied;
-                enemy.EnemyOutLifeZone += spawner.OnUselessEnemyDied;
+                enemy.EnemyDied += _spawner.OnUselessEnemyDied;
+                enemy.EnemyOutLifeZone += _spawner.OnUselessEnemyDied;
             }
         }
 

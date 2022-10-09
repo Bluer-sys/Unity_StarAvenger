@@ -3,7 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class EnemySpawner : MonoBehaviour
+public interface IEnemySpawner
+{
+    void OnEnemyDied(Enemy enemy);
+    void OnUselessEnemyDied(Enemy enemy);
+    UnityAction AllWavesSpawned { get; set; }
+    UnityAction<int, int> WaveChanged { get; set; }
+}
+
+public class EnemySpawner : MonoBehaviour, IEnemySpawner
 {
     [SerializeField] private Transform[] _spawnPointsForRandom;
     [SerializeField] private List<Wave> _waves;
@@ -12,8 +20,8 @@ public class EnemySpawner : MonoBehaviour
     private int currentWaveNumber = 0;
     private Wave currentWave;
 
-    public UnityAction AllWavesSpawned;
-    public UnityAction<int, int> WaveChanged;
+    public UnityAction AllWavesSpawned { get; set; }
+    public UnityAction<int, int> WaveChanged { get; set; }
 
     private void Awake()
     {

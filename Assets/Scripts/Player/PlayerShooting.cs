@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using Zenject;
 
 public class PlayerShooting : ObjectPool
 {
@@ -9,7 +10,8 @@ public class PlayerShooting : ObjectPool
     [SerializeField] private AudioSource _weaponSwitchSound;
 
     [SerializeField] private GameObject _menuPanel;
-    [SerializeField] private EnemySpawner _enemySpawner;
+    
+    [Inject] private IEnemySpawner _enemySpawner;
 
     private bool isLevelFinished = false;
 

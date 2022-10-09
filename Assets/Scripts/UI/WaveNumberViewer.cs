@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(TMP_Text))]
 public class WaveNumberViewer : MonoBehaviour
 {
-    [SerializeField] private EnemySpawner _enemySpawner;
     [SerializeField] private Animator _animator;
+    
+    [Inject] private IEnemySpawner _enemySpawner;
 
     private TMP_Text _text;
 

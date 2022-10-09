@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Zenject;
 
 public class GameSceneController : MonoBehaviour
 {
@@ -11,12 +12,13 @@ public class GameSceneController : MonoBehaviour
 
     [SerializeField] private Player _player;
     [SerializeField] private TMP_Text _gameOverText;
-    [SerializeField] private EnemySpawner _enemySpawner;
     [SerializeField] private TMP_Text _completeLevelText;
     [SerializeField] private Animator _completeLevelAnimator;
     [SerializeField] private Button[] _gameButtons;
     [SerializeField] private GameObject _menuPanel;
     [SerializeField] private AudioSource _buttonClickSound;
+    
+    [Inject] private IEnemySpawner _enemySpawner;
 
     private int currentLevelID;
 
