@@ -20,11 +20,11 @@ public class GameSceneController : MonoBehaviour
 
     private void Awake()
     {
-        PlayerData      = JsonUtility.FromJson<PlayerData>(PlayerPrefs.GetString("SaveGame"));
-
-        _uiView.SetCompleteLevelTextAlpha( 0 );
-        currentLevelID  = SceneManager.GetActiveScene().buildIndex;
+        PlayerData          = JsonUtility.FromJson<PlayerData>(PlayerPrefs.GetString("SaveGame"));
+        currentLevelID      = SceneManager.GetActiveScene().buildIndex;
         
+        _uiView.SetCompleteLevelTextAlpha( 0 );
+
         SubscribeClick( _uiView.MainMenuButton, OnMainMenuButtonClick );
         SubscribeClick( _uiView.RestartButton,  OnRestartLevelButtonClick );
         SubscribeClick( _uiView.ExitButton,     OnExitButtonClick );
@@ -53,9 +53,9 @@ public class GameSceneController : MonoBehaviour
 
     private void OnChangeLevel()
     {
-        PlayerData.money = _player.Money;
-        PlayerData.isInShop = true;
-        PlayerData.currentLevel = currentLevelID + 1;
+        PlayerData.money            = _player.Money;
+        PlayerData.isInShop         = true;
+        PlayerData.currentLevel     = currentLevelID + 1;
         PlayerPrefs.SetString("SaveGame", JsonUtility.ToJson(PlayerData));
 
         StartCoroutine(TryGoToShop());
@@ -78,8 +78,10 @@ public class GameSceneController : MonoBehaviour
     private IEnumerator TryGoToShop()
     {
         yield return new WaitForSeconds(2.0f);
+        
         _uiView.CompleteLevelAnimator.SetBool(IsLevelComplete, true);
         _uiView.SetCompleteLevelTextAlpha( 1 );
+        
         yield return new WaitForSeconds(5.0f);
 
         if (SceneManager.sceneCountInBuildSettings - 1 != SceneManager.GetActiveScene().buildIndex + 1)
