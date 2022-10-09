@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Collections.Generic;
+using DefaultNamespace.UI;
 using UnityEngine;
 using UnityEngine.Events;
 using Zenject;
@@ -9,9 +9,8 @@ public class PlayerShooting : ObjectPool
     [SerializeField] private PlayerWeapon[] _weapons;
     [SerializeField] private AudioSource _weaponSwitchSound;
 
-    [SerializeField] private GameObject _menuPanel;
-    
-    [Inject] private IEnemySpawner _enemySpawner;
+    [Inject] private IUiView        _uiView;
+    [Inject] private IEnemySpawner  _enemySpawner;
 
     private bool isLevelFinished = false;
 
@@ -102,7 +101,7 @@ public class PlayerShooting : ObjectPool
 
     private void OnMenuSwitch()
     {
-        _menuPanel.SetActive(!_menuPanel.activeSelf);
+        _uiView.SwitchMenuActive();
 
         Time.timeScale = 1 - Time.timeScale;
 

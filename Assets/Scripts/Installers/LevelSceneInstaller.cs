@@ -1,5 +1,6 @@
 namespace DefaultNamespace.Installers
 {
+    using UI;
     using Zenject;
 
     public class LevelSceneInstaller : MonoInstaller
@@ -12,7 +13,11 @@ namespace DefaultNamespace.Installers
                 .FromComponentInHierarchy()
                 .AsSingle();
             
-            
+            // UiView
+            Container
+                .BindInterfacesTo<UiView>()
+                .FromComponentInHierarchy()
+                .AsSingle();
         }
     }
 }
